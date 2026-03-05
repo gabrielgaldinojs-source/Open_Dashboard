@@ -1,61 +1,53 @@
 import gspread
-# Importa a biblioteca principal para interagir com o Google Sheets.
-
+ 
 from google.oauth2.service_account import Credentials
-# Importa o sistema de autenticação para usar o seu arquivo JSON.
-
+ 
 import pandas as pd
-# Importa o Pandas para transformar os dados da planilha em tabelas (DataFrames).
-
+ 
 import os
-# Importa funções do sistema operacional para lidar com caminhos de arquivos.
-
-# Configuração de Acesso
-# Define o que o seu código terá permissão de fazer no Google Drive e Sheets.
+import streamlit as st
+ 
 scopes = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
-
-# Autenticação
-# Carrega as suas credenciais do arquivo JSON que você baixou do Google Cloud.
-# Substitua pelo nome exato do seu arquivo que aparece na imagem: 'projetinho-489100-b0a856e8e3cd.json'
-creds = Credentials.from_service_account_file(
-    "projetinho-489100-b0a856e8e3cd.json",
-    scopes=scopes
-)
-
-# Cria o cliente que será usado para abrir as planilhas.
+     "https://www.googleapis.com/auth/spreadsheets",
+     "https://www.googleapis.com/auth/drive"
+ ]
+ 
+# Tente carregar das Secrets do Streamlit Cloud
+creds_dict = st.secrets["gcp_service_account"]
+creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(creds)
 
 def carregar_dados():
-    # Abre a planilha pelo nome exato que você deu no Google Drive.
+    # O código que você já tem continua funcionando perfeitamente:
     planilha = client.open("Respostas_Forms")
-    
-    # Seleciona a primeira aba da planilha (onde o Forms joga as respostas).
+    # Comentário: Acessa o arquivo pelo nome.
     aba = planilha.sheet1
-    
-    # Pega todos os dados da aba e transforma em uma lista de dicionários.
+    # Comentário: Pega a primeira aba.
     dados = aba.get_all_records()
-    
-    # Converte essa lista no formato de tabela do Pandas e retorna para o programa.
+    # Comentário: Converte para formato de tabela (DataFrame).
     return pd.DataFrame(dados)
+    # Comentário: Retorna os dados para o dashboard.
+ 
+client = gspread.authorize(creds)
 
-# Teste simples para verificar se está funcionando
+
+def carregar_dados():
+     planilha = client.open("Respostas_Forms")
+     aba = planilha.sheet1
+     dados = aba.get_all_records()
+     return pd.DataFrame(dados)
+ 
 if __name__ == "__main__":
-    try:
-        df = carregar_dados()
-        # Chama a função para buscar os dados.
-        
-        print("✅ Dados carregados com sucesso!")
-        print("-" * 30)
-        print(df.head()) 
-        # Exibe as primeiras 5 respostas do formulário.
-        print("-" * 30)
-        
-    except gspread.exceptions.SpreadsheetNotFound:
-        print("❌ Erro: A planilha 'Respostas_Forms' não foi encontrada. Verifique o nome!")
-    except gspread.exceptions.APIError as e:
-        print(f"❌ Erro de Permissão: Verifique se compartilhou a planilha com o e-mail do JSON. {e}")
-    except Exception as e:
-        print(f"❌ Ocorreu um erro inesperado: {e}")
+     try:
+         df = carregar_dados()
+         print("✅ Dados carregados com sucesso!")
+         print("-" * 30)
+         print(df.head()) 
+         print("-" * 30)
+         
+     except gspread.exceptions.SpreadsheetNotFound:
+         print("❌ Erro: A planilha 'Respostas_Forms' não foi encontrada. Verifique o nome!")
+     except gspread.exceptions.APIError as e:
+         print(f"❌ Erro de Permissão: Verifique se compartilhou a planilha com o e-mail do JSON. {e}")
+     except Exception as e:
+         print(f"❌ Ocorreu um erro inesperado: {e}")
