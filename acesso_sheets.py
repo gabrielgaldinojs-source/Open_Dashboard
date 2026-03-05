@@ -4,7 +4,6 @@ from google.oauth2.service_account import Credentials
  
 import pandas as pd
  
-import os
 import streamlit as st
  
 scopes = [
@@ -13,7 +12,10 @@ scopes = [
  ]
  
 # Tente carregar das Secrets do Streamlit Cloud
-creds_dict = st.secrets["gcp_service_account"]
+creds_dict = dict(st.secrets["gcp_service_account"])
+key = creds_dict.get("private_key")
+if isinstance(key, str) and "\\n" in key:
+    creds_dict["private_key"] = key.replace("\\n", "\n")
 creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(creds)
 
