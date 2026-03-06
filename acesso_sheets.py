@@ -13,31 +13,19 @@ scopes = [
  
 # Tente carregar das Secrets do Streamlit Cloud
 creds_dict = dict(st.secrets["gcp_service_account"])
-key = creds_dict.get("private_key")
-if isinstance(key, str) and "\\n" in key:
-    creds_dict["private_key"] = key.replace("\\n", "\n")
+key = creds_dict.get("private_key", "")
+if isinstance(key, str):
+    key = key.strip().replace("\r\n", "\n").replace("\\n", "\n")
+    creds_dict["private_key"] = key
 creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(creds)
 
 def carregar_dados():
-    # O código que você já tem continua funcionando perfeitamente:
     planilha = client.open("Respostas_Forms")
-    # Comentário: Acessa o arquivo pelo nome.
     aba = planilha.sheet1
-    # Comentário: Pega a primeira aba.
     dados = aba.get_all_records()
-    # Comentário: Converte para formato de tabela (DataFrame).
     return pd.DataFrame(dados)
-    # Comentário: Retorna os dados para o dashboard.
  
-client = gspread.authorize(creds)
-
-
-def carregar_dados():
-     planilha = client.open("Respostas_Forms")
-     aba = planilha.sheet1
-     dados = aba.get_all_records()
-     return pd.DataFrame(dados)
  
 if __name__ == "__main__":
      try:
